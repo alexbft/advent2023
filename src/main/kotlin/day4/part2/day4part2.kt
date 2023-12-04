@@ -1,8 +1,6 @@
 package day4.part2
 
 import bootstrap.readAllLinesFromInput
-import kotlin.math.max
-import kotlin.math.min
 
 fun solve(lines: List<String>): Long {
     val cardRe = """Card(\s+)(\d+): (.+)""".toRegex()
@@ -16,13 +14,12 @@ fun solve(lines: List<String>): Long {
         val numsCard = numsCardStr.split(" ").filter { it != "" }.map { it.toInt() }
         val wins = numsCard.count { it in numsWin }
         val copies = 1 + (if (additionalCopies.isEmpty()) 0 else additionalCopies.removeFirst())
-        val pile1 = min(wins, additionalCopies.size)
-        val pile2 = max(0, wins - additionalCopies.size)
-        for (i in 0 until pile1) {
-            additionalCopies[i] += copies
-        }
-        for (i in 0 until pile2) {
-            additionalCopies.addLast(copies)
+        for (i in 0 until wins) {
+            if (i < additionalCopies.size) {
+                additionalCopies[i] += copies
+            } else {
+                additionalCopies.addLast(copies)
+            }
         }
         result += copies
     }
