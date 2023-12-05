@@ -68,7 +68,7 @@ fun solve(lines: List<String>): Long {
         }
         current = next
     }
-    return current.map { it.first }.min()
+    return current.minOf { it.first }
 }
 
 fun main() {
