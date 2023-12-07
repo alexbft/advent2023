@@ -43,7 +43,7 @@ fun solve(lines: List<String>): Long {
             val (dest, src, len) = line.split(" ").map { it.toLong() }
             RangeMapping(dest, src, len)
         }
-        println("Current size: ${current.size}")
+        // println("Current size: ${current.size}")
         // println("Mappings: $mappings")
         val next = mutableListOf<LongRange>()
         for (seedRange in current) {
