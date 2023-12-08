@@ -16,10 +16,10 @@ private class Traverser(val startNode: String, stateMap: Map<State, Int>, lastSt
     private var index = 0
     private var cycleIndex = 0
 
-    val currentStep: Int
-        get() = cycle[index].step + cycleIndex * cycleLength
+    val currentStep: Long
+        get() = cycle[index].step + cycleIndex * cycleLength.toLong()
 
-    fun nextStep(): Int {
+    fun nextStep(): Long {
         val result = currentStep
         index += 1
         if (index >= cycle.size) {
@@ -75,7 +75,7 @@ fun solve(lines: List<String>): Long {
                 val state = State(current, instructionIndex)
                 if (state in stateMap) {
                     traverserMap[startNode] = Traverser(startNode, stateMap, state, step + 1)
-                    println(traverserMap[startNode])
+                    //println(traverserMap[startNode])
                     break
                 }
                 stateMap[state] = step + 1
@@ -87,11 +87,21 @@ fun solve(lines: List<String>): Long {
     }
     // The input should be a simple case where there is exactly 1 Z-node in the cycle and the cycle does not have a head
     val isSimple = traverserMap.values.all { traverser -> traverser.cycle.size == 1 && traverser.cycleStart == traverser.cycleLength }
-    if (!isSimple) {
-        throw Exception("This test case is not covered by the solution")
+    if (isSimple) {
+        val cycleLengths = traverserMap.values.map { traverser -> traverser.cycleLength.toLong() }
+        return cycleLengths.reduce(::leastCommonMultiple)
     }
-    val cycleLengths = traverserMap.values.map { traverser -> traverser.cycleLength.toLong() }
-    return cycleLengths.reduce(::leastCommonMultiple)
+    // Trying to solve the hard way... (at least should work on a test case)
+    val traversers = traverserMap.values.toList()
+    for (iter in 0..1_000_000_000L) {
+        if (traversers.map { it.currentStep }.toSet().size == 1) {
+            // found the solution
+            return traversers[0].currentStep
+        }
+        val minTraverser = traversers.minBy { it.currentStep }
+        minTraverser.nextStep()
+    }
+    throw Exception("Too many steps")
 }
 
 fun main() {
