@@ -77,7 +77,7 @@ fun solve(lines: List<String>): Int {
             val newPos = cur + dir
             if (newPos !in distanceMap) {
                 distanceMap[newPos] = newDist
-                queue.addLast(newPos)
+                queue.add(newPos)
             }
         }
     }

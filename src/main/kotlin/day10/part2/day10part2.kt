@@ -87,7 +87,7 @@ fun solve(lines: List<String>): Int {
             val newPos = cur + dir
             if (newPos !in loop) {
                 loop.add(newPos)
-                queue.addLast(newPos)
+                queue.add(newPos)
             }
         }
     }

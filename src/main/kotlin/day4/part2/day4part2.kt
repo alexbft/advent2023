@@ -18,7 +18,7 @@ fun solve(lines: List<String>): Long {
             if (i < additionalCopies.size) {
                 additionalCopies[i] += copies
             } else {
-                additionalCopies.addLast(copies)
+                additionalCopies.add(copies)
             }
         }
         result += copies
