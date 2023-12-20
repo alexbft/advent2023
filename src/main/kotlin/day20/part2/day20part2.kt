@@ -148,6 +148,7 @@ fun solve(lines: List<String>, pulseCount: Int): Long {
     for ((name, iters) in debugLowIters) {
         println("$name: ${inputsByModule[name]} ${iters.zipWithNext().map { it.second - it.first } }")
     }
+    // Run once, then copy all cycle lengths for conjunction modules into the list below
     return listOf(3739L, 3761L, 3797L, 3889L).reduce(::lcm)
 }
 
