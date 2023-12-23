@@ -14,26 +14,7 @@ private data class Edge(val from: Int, val to: Int, val length: Int)
 
 private data class NodeGraph(
     val edges: Map<Int, List<Edge>>, val startNodeId: Int, val endNodeId: Int
-) {
-    fun hasPathWithoutNode(nodeId: Int): Boolean {
-        val visited = mutableSetOf(nodeId, startNodeId)
-        val queue = ArrayDeque(listOf(startNodeId))
-        while (queue.isNotEmpty()) {
-            val curNodeId = queue.removeFirst()
-            if (curNodeId == endNodeId) {
-                return true
-            }
-            val connections = edges[curNodeId]!!.filter { edge ->
-                edge.to !in visited
-            }
-            for (edge in connections) {
-                queue.add(edge.to)
-                visited.add(edge.to)
-            }
-        }
-        return false
-    }
-}
+)
 
 private data class QueueItem(val pos: Vector2, val distance: Int)
 
@@ -95,65 +76,47 @@ private fun getNodeGraph(rows: List<String>): NodeGraph {
             }
         }
     }
-    println("DEBUG nodes: ${id}")
+    println("DEBUG nodes count: $id")
     return NodeGraph(edges.groupBy { it.from }, startNodeId, endNodeId)
 }
 
-private data class Path(val nodes: List<Int>, val length: Int)
-
-private fun findLongestPath(graph: NodeGraph, curNodeId: Int, visited: Set<Int>): Path? {
+private fun findLongestPath(graph: NodeGraph, curNodeId: Int, visited: Long): Int? {
     if (curNodeId == graph.endNodeId) {
-        return Path(listOf(curNodeId), 0)
-    }
-    if (graph.edges[graph.endNodeId]!!.all { it.to in visited }) {
-        return null
-    }
-    val connections = graph.edges[curNodeId]!!.filter { edge ->
-        edge.to !in visited
+        return 0
     }
     var maxLength = 0
-    var maxPath: Path? = null
-    for (edge in connections) {
-        val maybePath = findLongestPathCached(graph, edge.to, visited + curNodeId)
-        if (maybePath != null && maybePath.length + edge.length > maxLength) {
-            maxLength = maybePath.length + edge.length
-            maxPath = maybePath
+    for (edge in graph.edges[curNodeId]!!) {
+        if (((1L shl edge.to) and visited) != 0L) {
+            continue
+        }
+        val maybePath = findLongestPathCached(graph, edge.to, visited + (1L shl curNodeId))
+        if (maybePath != null && maybePath + edge.length > maxLength) {
+            maxLength = maybePath + edge.length
         }
     }
-    if (maxPath == null) return null
-    val nodes = listOf(curNodeId) + maxPath.nodes
-    return Path(nodes, maxLength)
+    return if (maxLength > 0) maxLength else null
 }
 
-private data class CacheKey(val curNodeId: Int, val visited: Set<Int>)
+private val cache = mutableMapOf<Int, MutableMap<Long, Int?>>()
+// var counter = 0
 
-private val cache = mutableMapOf<CacheKey, Path?>()
-
-private fun findLongestPathCached(graph: NodeGraph, curNodeId: Int, visited: Set<Int>): Path? {
-    val key = CacheKey(curNodeId, visited)
-    return cache.getOrPut(key) {
+private fun findLongestPathCached(graph: NodeGraph, curNodeId: Int, visited: Long): Int? {
+    return cache[curNodeId]!!.getOrPut(visited) {
+//        if (counter++ % 1000000 == 0) {
+//            println("$counter :: Cache ${cache.values.sumOf { it.size }}")
+//        }
         findLongestPath(graph, curNodeId, visited)
     }
 }
 
 fun solve(rows: List<String>): Int {
     val graph = getNodeGraph(rows)
-    //println(graph.edges)
-    val nodes = graph.edges.keys
-    for (node in nodes) {
-        if (node == graph.startNodeId || node == graph.endNodeId) {
-            continue
-        }
-        if (!graph.hasPathWithoutNode(node)) {
-            println("DEBUG node $node is a bridge")
-            continue
-        }
+    for (node in graph.edges.keys) {
+        cache[node] = mutableMapOf()
     }
 
-//    val path = findLongestPathCached(graph, graph.startNodeId, emptySet())!!
-//    println(path)
-//    return path.length
-    return 0
+    val path = findLongestPathCached(graph, graph.startNodeId, 0L)!!
+    return path
 }
 
 fun main() {
